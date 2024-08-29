@@ -1,0 +1,24 @@
+<nav class="navbar bg-custom fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('') }}">
+            <img src="{{ url_for('static', filename='Logo.png') }}" width="300" height="50">
+        </a>
+            <ul class="navbar-nav ml-auto d-flex flex-row">
+                    <li class="nav-item mx-4">
+                            <a class="nav-link" href="{{ url_for('') }}">Home</a>
+                    </li>
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="{{ url_for('') }}">About</a>
+                    </li>
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="{{ url_for('') }}">Features</a>
+                    </li>
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="{{ url_for('') }}">Sign Up</a>
+                    </li>
+                    <li class="nav-item mx-4">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Login</a>
+                    </li>
+            </ul>
+    </div>
+</nav>
