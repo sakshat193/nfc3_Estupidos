@@ -1,7 +1,25 @@
 import streamlit as st
+import base64
 
 # Set page title, icon, and layout
 st.set_page_config(page_title="Daam-Dost", page_icon=":moneybag:", layout="wide")
+
+def set_background(image_path):
+    with open(image_path, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded_image}");
+            background-size: cover;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background('Colorful Simple Illustrative Finance Presentation (2).jpg')
 
 # Welcome message
 st.title("Daam-Dost")

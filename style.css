@@ -90,6 +90,12 @@ nav {
 .fa {
     display: none;
 }
+.appview-container {
+    background-image: url("Colorful Simple Illustrative Finance Presentation (1).jpg");
+    background-size: cover;
+    background-position: center;
+
+}
 
 @media (max-width: 700px) {
     .nav-buttons ul li {

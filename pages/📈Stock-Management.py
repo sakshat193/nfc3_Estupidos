@@ -1,9 +1,28 @@
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
+import base64
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
+
+def set_background(image_path):
+    with open(image_path, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded_image}");
+            background-size: cover;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Set background color and style
+set_background('Colorful Simple Illustrative Finance Presentation (2).jpg')
 
 # Add a redirect to home page icon
 st.write("<a href='/'><img src='https://img.icons8.com/ios/24/000000/home--v1.png' width='24' height='24' alt='Home' style='margin: 0 10px;'></a>", unsafe_allow_html=True)

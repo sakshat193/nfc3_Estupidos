@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import base64
 
 def preprocess_data(df):
     """
@@ -44,6 +45,23 @@ def main():
     st.title("Bank Statement Analyzer")
     st.markdown("Upload your bank statement (Excel file) to analyze your monthly expenditure, income, and savings.")
 
+    def set_background(image_path):
+        with open(image_path, "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode()
+        st.markdown(
+            f"""
+            <style>
+            .stApp {{
+                background-image: url("data:image/png;base64,{encoded_image}");
+                background-size: cover;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # Set background color and style
+    set_background('Colorful Simple Illustrative Finance Presentation (2).jpg')
     
     uploaded_file = st.file_uploader("", type=["xls", "xlsx"], key="file_uploader")
     

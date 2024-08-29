@@ -22,11 +22,10 @@ def set_background(image_path):
     )
 
 # Set background color and style
-set_background('background.png')
+set_background('Colorful Simple Illustrative Finance Presentation (2).jpg')
 
-# Display DAAM DOST logo
-logo = Image.open("logo.png")
-st.image(logo, width=150)
+# logo = Image.open("logo.png")
+# st.image(logo, width=150)
 
 # Page Title
 st.title("DAAM DOST - Finance Manager Login")
