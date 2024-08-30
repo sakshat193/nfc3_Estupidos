@@ -8,5 +8,5 @@ prophet
 Prophet
 forcaster
 yfinance
-forecaster 
+
 
