@@ -1,12 +1,9 @@
-numpy
-pandas
-scikit-learn
 sqlalchemy
 plotly
-openpyxl
 prophet
-Prophet
-forcaster
 yfinance
-
+numpy
+pandas
+openpyxl
+scikit-learn
 

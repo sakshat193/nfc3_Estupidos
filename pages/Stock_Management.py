@@ -4,6 +4,10 @@ import plotly.graph_objs as go
 from prophet import Prophet
 from prophet.plot import plot_plotly
 import pandas as pd
+import os
+
+# Set your OpenAI API key
+os.environ["OPENAI_API_KEY"] = "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"
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -125,6 +129,8 @@ st.plotly_chart(fig)
 
 # Forecast section
 st.subheader("Stock Price Forecast")
+
+
 
 # User input for forecast days
 forecast_days = st.number_input("Number of days to forecast", min_value=1, max_value=365, value=30)
