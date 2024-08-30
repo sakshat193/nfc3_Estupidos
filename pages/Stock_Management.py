@@ -1,6 +1,9 @@
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
+from prophet import Prophet
+from prophet.plot import plot_plotly
+import pandas as pd
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -95,6 +98,9 @@ else:
 stock_data = yf.Ticker(sensex_companies[company])
 df = stock_data.history(period=period)
 
+# Remove timezone information
+df.index = df.index.tz_localize(None)
+
 # Plotting the selected graph
 if graph_type == "Line":
     fig = go.Figure(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=company))
@@ -116,6 +122,35 @@ fig.update_layout(title=f"{company} Stock Price ({time_span})",
 
 # Display the plot
 st.plotly_chart(fig)
+
+# Forecast section
+st.subheader("Stock Price Forecast")
+
+# User input for forecast days
+forecast_days = st.number_input("Number of days to forecast", min_value=1, max_value=365, value=30)
+
+# Prepare data for Prophet
+df_prophet = df.reset_index()[['Date', 'Close']]
+df_prophet.columns = ['ds', 'y']
+
+# Create and fit the model
+model = Prophet()
+model.fit(df_prophet)
+
+# Create future dataframe
+future = model.make_future_dataframe(periods=forecast_days)
+
+# Make predictions
+forecast = model.predict(future)
+
+# Plot the forecast
+fig_forecast = plot_plotly(model, forecast)
+fig_forecast.update_layout(title=f"{company} Stock Price Forecast (Next {forecast_days} days)",
+                           xaxis_title="Date",
+                           yaxis_title="Price (INR)")
+
+# Display the forecast plot
+st.plotly_chart(fig_forecast)
 
 st.write("""
 <style>
