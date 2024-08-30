@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 python==3.10.11
+=======
+>>>>>>> a2131f8420391344ca9a764a82019beaecbd8d43
 pip
 sqlalchemy
 plotly
