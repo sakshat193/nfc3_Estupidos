@@ -4,4 +4,4 @@ prophet
 yfinance
 streamlit
 pandas
-numpy
+numpy==1.23.3
