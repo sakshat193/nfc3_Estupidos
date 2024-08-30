@@ -4,4 +4,5 @@ Prophet
 yfinance
 numpy
 pandas
+openpyxl
 
