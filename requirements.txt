@@ -1,3 +1,4 @@
+pip
 sqlalchemy
 plotly
 prophet
@@ -6,4 +7,4 @@ streamlit
 pandas
 numpy==1.23.3
 setuptools==59.6.0
-Python==3.10
+distutils
