@@ -1,5 +1,7 @@
 sqlalchemy
 plotly
-prophet
+Prophet
 yfinance
+numpy
+pandas
 
