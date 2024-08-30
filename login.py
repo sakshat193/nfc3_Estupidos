@@ -59,7 +59,7 @@ if st.button("Login"):
                         st.success(f"Welcome, {name}! You're now logged in.")
                         st.session_state.logged_in = True  # Set login state
                         time.sleep(2)                        
-                        st.switch_page('pages\Landing-Page.py')
+                        st.switch_page('pages/Landing-Page.py')
                     else:
                         st.error("Incorrect password. Please try again.")
                 else:

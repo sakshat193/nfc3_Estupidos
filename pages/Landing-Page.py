@@ -93,14 +93,14 @@ with col1:
     if st.button("Personal Finance", key="pfm_button"):
         st.write("Redirecting to PFM Management page...")
         # Redirect to pfm_app.py
-        st.switch_page("pages\Expense_Record.py")
+        st.switch_page("pages/Expense_Record.py")
 
 # Button 2: Stock Market Investment
 with col2:
     if st.button("Stock Market Investment", key="stock_button"):
         st.write("Redirecting to Stock Market Investment page...")
         # Redirect to Stock-Management.py
-        st.switch_page("pages\Stock_Management.py")
+        st.switch_page("pages/Stock_Management.py")
 
         
 st.write("""
