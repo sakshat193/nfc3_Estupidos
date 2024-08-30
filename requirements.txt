@@ -1,3 +1,5 @@
+python==3.10.11
+pip
 sqlalchemy
 plotly
 prophet
@@ -5,4 +7,10 @@ yfinance
 pandas
 openpyxl
 scikit-learn
-
+setuptools
+streamlit
+numpy
+langchain_google_genai
+langchain
+dotenv
+google-generativeai
