@@ -6,4 +6,5 @@ numpy
 pandas
 openpyxl
 forecaster
+scikit-learn
 
