@@ -1,10 +1,9 @@
 sqlalchemy
 plotly
-Prophet
+prophet
 yfinance
 numpy
 pandas
 openpyxl
-forecaster
 scikit-learn
 
