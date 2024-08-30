@@ -1,9 +1,12 @@
-sqlalchemy
-plotly
-prophet
-yfinance
 numpy
 pandas
-openpyxl
 scikit-learn
+sqlalchemy
+plotly
+openpyxl
+prophet
+Prophet
+forcaster
+yfinance
+forecaster 
 
