@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 # Set page config at the very beginning
-st.set_page_config(page_title="Personal Finance Platform", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Personal Finance Platform", initial_sidebar_state="collapsed")
 
 # Function to load CSS
 def load_css(file_name):
