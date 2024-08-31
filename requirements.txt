@@ -6,7 +6,7 @@ pandas
 openpyxl
 scikit-learn
 streamlit
-numpy
+numpy==1.26.4
 pandas
 langchain_google_genai
 langchain
