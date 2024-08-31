@@ -4,6 +4,8 @@ import plotly.graph_objs as go
 from prophet import Prophet
 from prophet.plot import plot_plotly
 import pandas as pd
+import numpy as np
+from typing import Union
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -92,18 +94,15 @@ time_span = st.sidebar.selectbox("Select Time Span", ["5 days", "1 month", "3 mo
 graph_type = st.sidebar.selectbox("Select Graph Type", ["Line", "Candlestick", "Bar"])
 
 # Get historical data based on time span
-if time_span == "5 days":
-    period = "5d"
-elif time_span == "1 month":
-    period = "1mo"
-elif time_span == "3 months":
-    period = "3mo"
-elif time_span == "6 months":
-    period = "6mo"
-elif time_span == "1 year":
-    period = "1y"
-else:
-    period = "5y"
+time_span_mapping = {
+    "5 days": "5d",
+    "1 month": "1mo",
+    "3 months": "3mo",
+    "6 months": "6mo",
+    "1 year": "1y",
+    "5 years": "5y"
+}
+period = time_span_mapping[time_span]
 
 # Fetch data from yfinance
 stock_data = yf.Ticker(sensex_companies[company])
@@ -113,17 +112,12 @@ df = stock_data.history(period=period)
 df.index = df.index.tz_localize(None)
 
 # Plotting the selected graph
-if graph_type == "Line":
-    fig = go.Figure(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=company))
-elif graph_type == "Candlestick":
-    fig = go.Figure(go.Candlestick(x=df.index,
-                                   open=df['Open'],
-                                   high=df['High'],
-                                   low=df['Low'],
-                                   close=df['Close'],
-                                   name=company))
-elif graph_type == "Bar":
-    fig = go.Figure(go.Bar(x=df.index, y=df['Close'], name=company))
+graph_mapping = {
+    "Line": go.Figure(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=company)),
+    "Candlestick": go.Figure(go.Candlestick(x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'], name=company)),
+    "Bar": go.Figure(go.Bar(x=df.index, y=df['Close'], name=company))
+}
+fig = graph_mapping[graph_type]
 
 # Set graph layout
 fig.update_layout(title=f"{company} Stock Price ({time_span})",
@@ -133,6 +127,28 @@ fig.update_layout(title=f"{company} Stock Price ({time_span})",
 
 # Display the plot
 st.plotly_chart(fig)
+
+# Fourier series function implementation
+@staticmethod
+def fourier_series(
+    dates: pd.Series,
+    period: Union[int, float],
+    series_order: int,
+) -> np.ndarray[np.float64]:
+    """
+    Generate Fourier series features for given dates, period, and series order.
+
+    :param dates: A pandas Series containing datetime values.
+    :param period: The period of the seasonality (e.g., 365.25 for yearly seasonality).
+    :param series_order: The order of the Fourier series.
+    :return: A numpy array with Fourier features.
+    """
+    time = pd.to_datetime(dates).view(int) / 10**9
+    result = []
+    for i in range(1, series_order + 1):
+        result.append(np.sin(2 * np.pi * i * time / period))
+        result.append(np.cos(2 * np.pi * i * time / period))
+    return np.column_stack(result)
 
 # Forecast section
 st.subheader("Stock Price Forecast")
@@ -146,10 +162,22 @@ df_prophet.columns = ['ds', 'y']
 
 # Create and fit the model
 model = Prophet()
+
+# Optional: Add Fourier features for seasonality
+fourier_order = 3  # Change this according to your needs
+seasonality_period = 365.25  # Assuming yearly seasonality
+fourier_features = fourier_series(df_prophet['ds'], period=seasonality_period, series_order=fourier_order)
+model.add_regressor('fourier_features', standardize=False)
+df_prophet = pd.concat([df_prophet, pd.DataFrame(fourier_features, columns=[f'fourier_{i}' for i in range(1, 2 * fourier_order + 1)])], axis=1)
+
 model.fit(df_prophet)
 
 # Create future dataframe
 future = model.make_future_dataframe(periods=forecast_days)
+
+# Add Fourier features to the future dataframe
+future_fourier = fourier_series(future['ds'], period=seasonality_period, series_order=fourier_order)
+future = pd.concat([future, pd.DataFrame(future_fourier, columns=[f'fourier_{i}' for i in range(1, 2 * fourier_order + 1)])], axis=1)
 
 # Make predictions
 forecast = model.predict(future)
@@ -165,10 +193,7 @@ st.plotly_chart(fig_forecast)
 
 # Function to generate insights using Langchain and Gemini
 def generate_insights(company, forecast_data, historical_data):
-    # Create an instance of the Gemini Pro model
     llm = ChatGoogleGenerativeAI(api_key=google_api_key, model="gemini-pro", temperature=0.7)
-
-    # Create a prompt template
     template = """
     You are a financial analyst. Based on the following data for {company}, provide insights and analysis:
 
@@ -197,18 +222,12 @@ def generate_insights(company, forecast_data, historical_data):
 
     Limit your response to about 150 words.
     """
-
-    # Create a prompt from the template
     prompt = PromptTemplate(
         input_variables=["company", "hist_start", "hist_end", "hist_start_price", "hist_end_price", "hist_max_price", "hist_min_price",
                          "forecast_start", "forecast_end", "forecast_start_price", "forecast_end_price", "forecast_max_price", "forecast_min_price"],
         template=template
     )
-
-    # Create a chain
     chain = LLMChain(llm=llm, prompt=prompt)
-
-    # Run the chain
     insights = chain.run(
         company=company,
         hist_start=historical_data.index[0].date(),
@@ -224,7 +243,6 @@ def generate_insights(company, forecast_data, historical_data):
         forecast_max_price=round(forecast_data['yhat'].tail(forecast_days).max(), 2),
         forecast_min_price=round(forecast_data['yhat'].tail(forecast_days).min(), 2)
     )
-
     return insights
 
 # Button to generate insights
@@ -246,10 +264,7 @@ body {
 button:hover {
     transform: scale(1.15);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    background-color: #FFFFFF;
-    color: #FFFFFF;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+    background-color: #
 </style>
 """, unsafe_allow_html=True)
 
