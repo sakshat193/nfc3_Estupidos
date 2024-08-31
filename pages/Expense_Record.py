@@ -92,3 +92,22 @@ if st.sidebar.button('Upload Bank Statement'):
     page = 'pages/Upload-Bank-Statement.py'
     st.write("Redirecting to Back Statement page...")
     st.switch_page(page)
+
+st.write("""
+<style>
+/* Dark mode background and text color */
+body {
+    background-color: #0E1117;
+    color: #ffffff;
+}
+
+/* Enhance grow and glow animation */
+button:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background-color: #FFFFFF;
+    color: #FFFFFF;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+</style>
+""", unsafe_allow_html=True)
