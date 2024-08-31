@@ -1,7 +1,55 @@
 import streamlit as st
 import base64
+import os
+
+# Function to load CSS
+def load_css(file_name):
+    with open(file_name, 'r') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+css_path = os.path.join('static', 'css', 'style.css')
+load_css(css_path)
 
 st.set_page_config(page_title="Personal Finance Platform", layout="wide")
+
+# Add vector designs
+st.markdown("""
+    <div class="vector vector-1"></div>
+    <div class="vector vector-2"></div>
+    <div class="vector vector-3"></div>
+    <div class="vector vector-4"></div>
+    <div class="vector vector-5"></div>
+""", unsafe_allow_html=True)
+
+"""Get Started"""
+# Add a new section for the buttons
+st.markdown("""
+<h1>
+    <span>Get Started</span>
+</h1>
+""", unsafe_allow_html=True)
+
+st.write("Explore our features and start managing your finances today!")
+st.write("")
+
+# Create two columns for buttons
+col1, col2 = st.columns((1, 1))  # Adjust the column widths to make the buttons closer
+
+# Button 1: PFM Management
+with col1:
+    if st.button("Personal Finance", key="pfm_button"):
+        st.write("Redirecting to PFM Management page...")
+        # Redirect to pfm_app.py
+        st.switch_page("pages/Expense_Record.py")
+
+# Button 2: Stock Market Investment
+with col2:
+    if st.button("Stock Market Investment", key="stock_button"):
+        st.write("Redirecting to Stock Market Investment page...")
+        # Redirect to Stock-Management.py
+        st.switch_page("pages/Stock_Management.py")
+
+"""Designing Get Started"""
 
 if "nav" not in st.session_state:
     st.session_state.nav = "About"
@@ -61,64 +109,3 @@ elif st.session_state.nav == "ContactMe":
         - **Phone**: +91 12345 67890
         """
     )
-
-# Add a new section for the buttons
-st.write("""
-<h1 style="font-size: 36px; font-weight: bold; color: #FFFFFF; text-align: left; margin-left: 20px;">
-    <span style="border-radius: 10px; padding: 10px; background-color: #0E1117; transition: background-color 0.3s ease, transform 0.3s ease;">
-        Get Started
-    </span>
-</h1>
-""", unsafe_allow_html=True)
-
-st.write("Explore our features and start managing your finances today!")
-st.write("")
-
-# Create two columns for buttons
-col1, col2 = st.columns((1, 1))  # Adjust the column widths to make the buttons closer
-
-# Add some CSS to make the "Get Started" text grow on hover
-st.write("""
-<style>
-    h1 span:hover {
-        transform: scale(1.1);
-        background-color: #333;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Button 1: PFM Management
-with col1:
-    if st.button("Personal Finance", key="pfm_button"):
-        st.write("Redirecting to PFM Management page...")
-        # Redirect to pfm_app.py
-        st.switch_page("pages/Expense_Record.py")
-
-# Button 2: Stock Market Investment
-with col2:
-    if st.button("Stock Market Investment", key="stock_button"):
-        st.write("Redirecting to Stock Market Investment page...")
-        # Redirect to Stock-Management.py
-        st.switch_page("pages/Stock_Management.py")
-
-        
-st.write("""
-<style>
-/* Dark mode background and text color */
-body {
-    background-color: #0E1117;
-    color: #ffffff;
-}
-
-/* Enhance grow and glow animation */
-button:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    background-color: #FFFFFF;
-    color: #FFFFFF;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-</style>
-""", unsafe_allow_html=True)
-
