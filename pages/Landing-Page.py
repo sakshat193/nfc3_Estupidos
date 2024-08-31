@@ -118,11 +118,18 @@ elif nav == "Contact":
 # Add footer
 st.markdown("""
 <footer>
-    <p>&copy; 2023 Personal Finance Platform. All rights reserved.</p>
+    <p>&copy; 2023 Daam-Dost Personal Finance Platform. All rights reserved.</p>
 </footer>
 """, unsafe_allow_html=True)
 
 st.write("""
+<style>
+/* Dark mode background and text color */
+body {
+    background-color: #0E1117;
+    color: #ffffff;
+}
+
 /* Enhance grow and glow animation */
 button:hover {
     transform: scale(1.15);
