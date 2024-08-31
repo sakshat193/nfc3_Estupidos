@@ -1,111 +1,111 @@
 import streamlit as st
-import base64
 import os
+
+# Set page config at the very beginning
+st.set_page_config(page_title="Personal Finance Platform", layout="wide", initial_sidebar_state="collapsed")
 
 # Function to load CSS
 def load_css(file_name):
     with open(file_name, 'r') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+# Load the CSS from the correct path
 css_path = os.path.join('static', 'css', 'style.css')
 load_css(css_path)
 
-st.set_page_config(page_title="Personal Finance Platform", layout="wide")
+# Add a container for better layout
+main_container = st.container()
 
-# Add vector designs
-st.markdown("""
-    <div class="vector vector-1"></div>
-    <div class="vector vector-2"></div>
-    <div class="vector vector-3"></div>
-    <div class="vector vector-4"></div>
-    <div class="vector vector-5"></div>
-""", unsafe_allow_html=True)
+with main_container:
+    # Add hero section
+    st.markdown("""
+    <div class="hero">
+        <h1>Personal Finance Platform</h1>
+        <p>Take control of your financial future</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-"""Get Started"""
-# Add a new section for the buttons
-st.markdown("""
-<h1>
-    <span>Get Started</span>
-</h1>
-""", unsafe_allow_html=True)
+    # Add "Get Started" section
+    st.markdown("""
+    <div class="get-started">
+        <h2>Get Started</h2>
+        <p>Explore our features and start managing your finances today!</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.write("Explore our features and start managing your finances today!")
-st.write("")
+    # Create two columns for buttons
+    col1, col2 = st.columns((1, 1))
 
-# Create two columns for buttons
-col1, col2 = st.columns((1, 1))  # Adjust the column widths to make the buttons closer
+    # Button 1: PFM Management
+    with col1:
+        if st.button("Personal Finance", key="pfm_button", use_container_width=True):
+            st.switch_page("pages/Expense_Record.py")
 
-# Button 1: PFM Management
-with col1:
-    if st.button("Personal Finance", key="pfm_button"):
-        st.write("Redirecting to PFM Management page...")
-        # Redirect to pfm_app.py
-        st.switch_page("pages/Expense_Record.py")
+    # Button 2: Stock Market Investment
+    with col2:
+        if st.button("Stock Market Investment", key="stock_button", use_container_width=True):
+            st.switch_page("pages/Stock_Management.py")
 
-# Button 2: Stock Market Investment
-with col2:
-    if st.button("Stock Market Investment", key="stock_button"):
-        st.write("Redirecting to Stock Market Investment page...")
-        # Redirect to Stock-Management.py
-        st.switch_page("pages/Stock_Management.py")
+    # Add features section
+    st.markdown("""
+    <div class="features">
+        <h2>Our Features</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <h3>Expense Tracking</h3>
+                <p>Monitor and categorize your spending effortlessly.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Budgeting Tools</h3>
+                <p>Plan and track your budget efficiently.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Savings Goal Setting</h3>
+                <p>Set and achieve your savings goals.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Debt Management</h3>
+                <p>Manage and reduce your debts effectively.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Portfolio Optimization</h3>
+                <p>Optimize your investment portfolio.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Real-Time Investment Support</h3>
+                <p>Receive real-time insights and recommendations.</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-"""Designing Get Started"""
-
-if "nav" not in st.session_state:
-    st.session_state.nav = "About"
-
-def set_nav(new_nav):
-    st.session_state.nav = new_nav
-
+# Sidebar navigation
 st.sidebar.title("Navigate")
-if st.sidebar.button("About"):
-    set_nav("About")
-if st.sidebar.button("Features"):
-    set_nav("Features")
-if st.sidebar.button("Contact Me"):
-    set_nav("ContactMe")
+nav = st.sidebar.radio("Go to", ["Home", "About", "Contact"])
 
-if st.session_state.nav == "About":
-    st.subheader("About Us")
-    st.write(
-        """
-        Our platform is designed to enhance personal finance management and optimize stock market investment strategies. Leveraging AI-driven capabilities, we provide tools for:
-        - Expense Tracking
-        - Budgeting
-        - Savings Goal Setting
-        - Debt Management
-        - Portfolio Optimization
-        - Real-Time Investment Decision Support
+if nav == "About":
+    st.markdown("""
+    <div class="about">
+        <h2>About Us</h2>
+        <p>Our platform is designed to enhance personal finance management and optimize stock market investment strategies. We focus on delivering personalized recommendations and analyzing extensive datasets to help you make informed financial decisions.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-        We focus on delivering personalized recommendations and analyzing extensive datasets to help you make informed financial decisions.
-        """
-    )
+elif nav == "Contact":
+    st.markdown("""
+    <div class="contact">
+        <h2>Contact Us</h2>
+        <p>If you have any questions or need support, please reach out to us:</p>
+        <ul>
+            <li><strong>Email:</strong> example_email@gmail.com</li>
+            <li><strong>Phone:</strong> +91 12345 67890</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
-elif st.session_state.nav == "Features":
-    st.subheader("Features")
-    st.write(
-        """
-        **Expense Tracking**: Monitor and categorize your spending.
-
-        **Budgeting Tools**: Plan and track your budget efficiently.
-
-        **Savings Goal Setting**: Set and achieve your savings goals.
-
-        **Debt Management**: Manage and reduce your debts effectively.
-
-        **Portfolio Optimization**: Optimize your investment portfolio.
-
-        **Real-Time Investment Decision Support**: Receive real-time insights and recommendations.
-        """
-    )
-
-elif st.session_state.nav == "ContactMe":
-    st.subheader("Contact Us")
-    st.write(
-        """
-        If you have any questions or need support, please reach out to us:
-        
-        - **Email**: example_email@gmail.com
-        - **Phone**: +91 12345 67890
-        """
-    )
+# Add footer
+st.markdown("""
+<footer>
+    <p>&copy; 2023 Personal Finance Platform. All rights reserved.</p>
+</footer>
+""", unsafe_allow_html=True)
