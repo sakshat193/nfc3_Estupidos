@@ -7,22 +7,14 @@ import pandas as pd
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Get the Google API key from environment variables
-google_api_key = os.getenv("GOOGLE_API_KEY")
+# Assuming you store the key in st.secrets
+google_api_key = st.secrets["google"]["api_key"]
 
 # Check if the API key is available
 if not google_api_key:
-    st.error("Google API key not found. Please check your .env file.")
+    st.error("Google API key not found. Please check your Streamlit secrets configuration.")
     st.stop()
-
-# Set the Google API key for the application
-os.environ["GOOGLE_API_KEY"] = google_api_key
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -174,7 +166,7 @@ st.plotly_chart(fig_forecast)
 # Function to generate insights using Langchain and Gemini
 def generate_insights(company, forecast_data, historical_data):
     # Create an instance of the Gemini Pro model
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.7)
+    llm = ChatGoogleGenerativeAI(api_key=google_api_key, model="gemini-pro", temperature=0.7)
 
     # Create a prompt template
     template = """

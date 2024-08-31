@@ -1,4 +1,3 @@
-pip
 sqlalchemy
 plotly
 prophet
@@ -6,10 +5,10 @@ yfinance
 pandas
 openpyxl
 scikit-learn
-setuptools
 streamlit
 numpy
+pandas
 langchain_google_genai
 langchain
-dotenv
 google-generativeai
+
