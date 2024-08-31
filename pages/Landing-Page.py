@@ -46,22 +46,21 @@ with main_container:
         <p>Take control of your financial future</p>
     </div>
     """, unsafe_allow_html=True)
+   col1, col2 = st.columns((1, 1))
 
-    # Create two columns for buttons
-    col1, col2 = st.columns((1, 1))
-
-    # Button 1: PFM Management
-    with col1:
+   # Button 1: PFM Management
+   with col1:
         if st.button("Personal Finance", key="pfm_button", use_container_width=True):
             st.switch_page("pages/Expense_Record.py")
 
     # Button 2: Stock Market Investment
-    with col2:
+   with col2:
         if st.button("Stock Market Investment", key="stock_button", use_container_width=True):
             st.switch_page("pages/Stock_Management.py")
 
+
     # Add features section
-    st.markdown("""
+   st.markdown("""
     <div class="features">
         <h2>Our Features</h2>
         <div class="feature-grid">
