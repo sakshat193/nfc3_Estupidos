@@ -38,9 +38,10 @@ main_container = st.container()
 
 with main_container:
     # Add hero section
-    st.markdown("""
+   st.markdown("""
     <div class="hero">
         <h1>Daam-Dost</h1>
+        <img src="assets/logo.png" alt="Daam-Dost Logo" style="width:150px; height:auto;">
         <h2>Personal Finance Platform</h2>
         <p>Take control of your financial future</p>
     </div>
