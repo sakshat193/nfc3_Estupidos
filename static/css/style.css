@@ -13,13 +13,27 @@ body {
     overflow: hidden;
 }
 
+/* Vector container */
+.vector-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+}
+
 /* Dynamic vector designs */
 .vector {
     position: absolute;
-    border-radius: 50%;
     opacity: 0.1;
     animation: float 20s infinite ease-in-out;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+}
+
+/* Dynamic vector designs */
+.vector circle {
+    fill: url(#grad);
 }
 
 .vector-1 {
@@ -81,6 +95,7 @@ body {
     margin-bottom: 2rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
+
 
 .hero h1 {
     font-size: 3rem;

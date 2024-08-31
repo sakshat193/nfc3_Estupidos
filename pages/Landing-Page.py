@@ -13,16 +13,27 @@ def load_css(file_name):
 css_path = os.path.join('static', 'css', 'style.css')
 load_css(css_path)
 
-# Add vector designs
+# Add vector designs using inline SVG
 st.markdown("""
-    <div class="vector vector-1"></div>
-    <div class="vector vector-2"></div>
-    <div class="vector vector-3"></div>
-    <div class="vector vector-4"></div>
-    <div class="vector vector-5"></div>
+    <div class="vector-container">
+        <svg class="vector vector-1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" />
+        </svg>
+        <svg class="vector vector-2" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" />
+        </svg>
+        <svg class="vector vector-3" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" />
+        </svg>
+        <svg class="vector vector-4" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" />
+        </svg>
+        <svg class="vector vector-5" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="100" />
+        </svg>
+    </div>
 """, unsafe_allow_html=True)
 
-# Add a container for better layout
 main_container = st.container()
 
 with main_container:
@@ -31,14 +42,6 @@ with main_container:
     <div class="hero">
         <h1>Personal Finance Platform</h1>
         <p>Take control of your financial future</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Add "Get Started" section
-    st.markdown("""
-    <div class="get-started">
-        <h2>Get Started</h2>
-        <p>Explore our features and start managing your finances today!</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -117,4 +120,16 @@ st.markdown("""
 <footer>
     <p>&copy; 2023 Personal Finance Platform. All rights reserved.</p>
 </footer>
+""", unsafe_allow_html=True)
+
+st.write("""
+/* Enhance grow and glow animation */
+button:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background-color: #FFFFFF;
+    color: #FFFFFF;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+</style>
 """, unsafe_allow_html=True)
