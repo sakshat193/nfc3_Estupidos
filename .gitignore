@@ -1,4 +1,5 @@
 .streamlit/secrets.toml
 Daam-dost-userData.db
-models.py
+#models.py
 expenses.csv
+.env
