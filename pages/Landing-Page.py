@@ -13,6 +13,15 @@ def load_css(file_name):
 css_path = os.path.join('static', 'css', 'style.css')
 load_css(css_path)
 
+# Add vector designs
+st.markdown("""
+    <div class="vector vector-1"></div>
+    <div class="vector vector-2"></div>
+    <div class="vector vector-3"></div>
+    <div class="vector vector-4"></div>
+    <div class="vector vector-5"></div>
+""", unsafe_allow_html=True)
+
 # Add a container for better layout
 main_container = st.container()
 
