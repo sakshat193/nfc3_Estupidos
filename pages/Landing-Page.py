@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 # Set page config at the very beginning
-st.set_page_config(page_title="Personal Finance Platform", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Daam-Dost", initial_sidebar_state="collapsed")
 
 # Function to load CSS
 def load_css(file_name):
@@ -40,7 +40,8 @@ with main_container:
     # Add hero section
     st.markdown("""
     <div class="hero">
-        <h1>Personal Finance Platform</h1>
+        <h1>Daam-Dost</h1>
+        <h2>Personal Finance Platform</h2>
         <p>Take control of your financial future</p>
     </div>
     """, unsafe_allow_html=True)
