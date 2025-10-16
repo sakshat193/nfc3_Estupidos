@@ -166,7 +166,7 @@ st.plotly_chart(fig_forecast)
 # Function to generate insights using Langchain and Gemini
 def generate_insights(company, forecast_data, historical_data):
     # Create an instance of the Gemini Pro model
-    llm = ChatGoogleGenerativeAI(api_key=google_api_key, model="gemini-pro", temperature=0.7)
+    llm = ChatGoogleGenerativeAI(api_key=google_api_key, model="gemini-1.5-flash", temperature=0.7)
 
     # Create a prompt template
     template = """
