@@ -126,8 +126,21 @@ def _normalize_model_name(name: str) -> str:
         return name
     return f"models/{name}"
 
-# Sidebar model override
+# Sidebar: API endpoint and model override
 st.sidebar.markdown("---")
+endpoint_choice = st.sidebar.selectbox(
+    "API endpoint",
+    options=["Global (default)", "EU (data residency)"]
+)
+try:
+    if endpoint_choice.startswith("EU"):
+        genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://eu.generativelanguage.googleapis.com"})
+    else:
+        genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://generativelanguage.googleapis.com"})
+except Exception:
+    # Fallback already set earlier via env var
+    pass
+
 override = st.sidebar.selectbox("Model (optional)", options=KNOWN_MODEL_CANDIDATES, index=0)
 if override != "Auto (recommended)":
     st.session_state["genai_working_model"] = _normalize_model_name(override)
@@ -143,7 +156,25 @@ with st.sidebar.expander("AI diagnostics"):
         "client_version": info.get("client_version"),
         "has_GenerativeModel": info.get("has_GenerativeModel"),
         "has_generate_text": info.get("has_generate_text"),
+        "endpoint": "eu" if endpoint_choice.startswith("EU") else "global",
     })
+    # Try list_models for clearer visibility of what's available
+    lm = getattr(genai, "list_models", None)
+    if lm:
+        try:
+            models = list(lm())
+            st.write({
+                "list_models_count": len(models),
+                "first_models": [
+                    {
+                        "name": getattr(m, "name", None),
+                        "methods": list(getattr(m, "supported_generation_methods", []) or []),
+                    }
+                    for m in models[:10]
+                ],
+            })
+        except Exception as e:
+            st.write({"list_models_error": f"{type(e).__name__}: {e}"})
     attempts = info.get("attempts") or []
     if attempts:
         st.write("Probe results (first 10):")
