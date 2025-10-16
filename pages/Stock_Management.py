@@ -42,6 +42,9 @@ def _pick_supported_model():
         # 1.5 8B variants where available
         "models/gemini-1.5-flash-8b",
         "models/gemini-1.5-pro-8b",
+        # Common numbered variants
+        "models/gemini-1.5-flash-001",
+        "models/gemini-1.5-pro-001",
         # Short names (some SDKs accept these)
         "gemini-1.5-flash",
         "gemini-1.5-pro",
@@ -50,10 +53,21 @@ def _pick_supported_model():
         "gemini-1.5-pro-latest",
         "gemini-1.5-flash-8b",
         "gemini-1.5-pro-8b",
+        "gemini-1.5-flash-001",
+        "gemini-1.5-pro-001",
         # Fallback to PaLM2 if Gemini not available
         "models/text-bison-001",
         "text-bison-001",
     ]
+
+    # Prepare diagnostics
+    diag = {
+        "client_version": getattr(genai, "__version__", "unknown"),
+        "has_GenerativeModel": bool(getattr(genai, "GenerativeModel", None)),
+        "has_generate_text": bool(getattr(genai, "generate_text", None)),
+        "attempts": [],
+    }
+    st.session_state["genai_diag"] = diag
 
     model_ctor = getattr(genai, "GenerativeModel", None)
     for name in candidates:
@@ -71,13 +85,16 @@ def _pick_supported_model():
                     ok_text = getattr(resp, "result", None) or getattr(resp, "candidates", [None])[0]
                 else:
                     ok_text = None
+            diag["attempts"].append({"model": name, "ok": ok_text is not None, "error": None})
             if ok_text is not None:
                 st.session_state["genai_working_model"] = name
                 return name
         except google_exceptions.NotFound:
+            diag["attempts"].append({"model": name, "ok": False, "error": "NotFound"})
             continue
-        except Exception:
+        except Exception as e:
             # Ignore and try next candidate; other errors may be perms/timeouts
+            diag["attempts"].append({"model": name, "ok": False, "error": f"{type(e).__name__}: {e}"})
             continue
     return None
 
@@ -118,6 +135,21 @@ if override != "Auto (recommended)":
 # Show which model is selected
 resolved = _pick_supported_model()
 st.sidebar.caption(f"Using model: {resolved or 'unresolved'}")
+
+# Diagnostics UI
+with st.sidebar.expander("AI diagnostics"):
+    info = st.session_state.get("genai_diag") or {}
+    st.write({
+        "client_version": info.get("client_version"),
+        "has_GenerativeModel": info.get("has_GenerativeModel"),
+        "has_generate_text": info.get("has_generate_text"),
+    })
+    attempts = info.get("attempts") or []
+    if attempts:
+        st.write("Probe results (first 10):")
+        st.write(attempts[:10])
+    else:
+        st.caption("No attempts recorded yet or probing failed very early.")
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
