@@ -3,3 +3,4 @@ Daam-dost-userData.db
 #models.py
 expenses.csv
 .env
+__pycache__/
