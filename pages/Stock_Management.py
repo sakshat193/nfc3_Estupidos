@@ -8,6 +8,9 @@ import os
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 
+# Set page config FIRST to avoid rerun issues
+st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
+
 # Assuming you store the key in st.secrets
 google_api_key = st.secrets["google"]["api_key"]
 
@@ -128,26 +131,36 @@ def _normalize_model_name(name: str) -> str:
 
 # Sidebar: API endpoint and model override
 st.sidebar.markdown("---")
+
+# Endpoint selector - only reconfigure if changed
+if "endpoint_choice" not in st.session_state:
+    st.session_state["endpoint_choice"] = "Global (default)"
+
 endpoint_choice = st.sidebar.selectbox(
     "API endpoint",
-    options=["Global (default)", "EU (data residency)"]
+    options=["Global (default)", "EU (data residency)"],
+    key="endpoint_selector"
 )
-try:
-    if endpoint_choice.startswith("EU"):
-        genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://eu.generativelanguage.googleapis.com"})
-    else:
-        genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://generativelanguage.googleapis.com"})
-except Exception:
-    # Fallback already set earlier via env var
-    pass
 
-override = st.sidebar.selectbox("Model (optional)", options=KNOWN_MODEL_CANDIDATES, index=0)
+# Only reconfigure if endpoint changed
+if endpoint_choice != st.session_state.get("endpoint_choice"):
+    st.session_state["endpoint_choice"] = endpoint_choice
+    st.session_state.pop("genai_working_model", None)  # Reset model cache
+    try:
+        if endpoint_choice.startswith("EU"):
+            genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://eu.generativelanguage.googleapis.com"})
+        else:
+            genai.configure(api_key=google_api_key, client_options={"api_endpoint": "https://generativelanguage.googleapis.com"})
+    except Exception:
+        pass
+
+override = st.sidebar.selectbox("Model (optional)", options=KNOWN_MODEL_CANDIDATES, index=0, key="model_override")
 if override != "Auto (recommended)":
     st.session_state["genai_working_model"] = _normalize_model_name(override)
 
-# Show which model is selected
-resolved = _pick_supported_model()
-st.sidebar.caption(f"Using model: {resolved or 'unresolved'}")
+# Only show resolved model, don't call _pick_supported_model in main flow
+resolved = st.session_state.get("genai_working_model", "not yet probed")
+st.sidebar.caption(f"Using model: {resolved}")
 
 # Diagnostics UI
 with st.sidebar.expander("AI diagnostics"):
@@ -181,9 +194,6 @@ with st.sidebar.expander("AI diagnostics"):
         st.write(attempts[:10])
     else:
         st.caption("No attempts recorded yet or probing failed very early.")
-
-# Set page title and icon
-st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
 
 if st.button("Back to Home"):
     st.switch_page("pages/Landing-Page.py")
