@@ -4,9 +4,9 @@ import plotly.graph_objs as go
 from prophet import Prophet
 from prophet.plot import plot_plotly
 import pandas as pd
+import os
 import google.generativeai as genai
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from google.api_core import exceptions as google_exceptions
 
 # Assuming you store the key in st.secrets
 google_api_key = st.secrets["google"]["api_key"]
@@ -17,7 +17,74 @@ if not google_api_key:
     st.stop()
 
 # Configure the Gemini API
-genai.configure(api_key=google_api_key)
+try:
+    genai.configure(api_key=google_api_key)
+except Exception:
+    # Older clients may not expose configure; fall back to env var
+    os.environ["GOOGLE_API_KEY"] = google_api_key
+
+def _pick_supported_model():
+    """Probe candidate model names until one works, then cache it.
+
+    This avoids SDK/API version mismatches (v1 vs v1beta) and 404s.
+    """
+    if "genai_working_model" in st.session_state:
+        return st.session_state["genai_working_model"]
+
+    candidates = [
+        # Prefer fully-qualified names first
+        "models/gemini-1.5-flash",
+        "models/gemini-1.5-pro",
+        "models/gemini-1.0-pro",
+        # Short names (some SDKs accept these)
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+        "gemini-1.0-pro",
+        # Fallback to PaLM2 if Gemini not available
+        "models/text-bison-001",
+        "text-bison-001",
+    ]
+
+    for name in candidates:
+        try:
+            model = genai.GenerativeModel(name)
+            # Tiny probe to confirm availability without spending much
+            resp = model.generate_content("ok", request_options={"timeout": 8})
+            if getattr(resp, "text", None) is not None:
+                st.session_state["genai_working_model"] = name
+                return name
+        except google_exceptions.NotFound:
+            continue
+        except Exception:
+            # Ignore and try next candidate; other errors may be perms/timeouts
+            continue
+    return None
+
+
+# Allow user to override the model preference via UI
+KNOWN_MODEL_CANDIDATES = [
+    "Auto (recommended)",
+    "models/gemini-1.5-flash",
+    "models/gemini-1.5-pro",
+    "models/gemini-1.0-pro",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+    "gemini-1.0-pro",
+    "models/text-bison-001",
+    "text-bison-001",
+]
+
+def _normalize_model_name(name: str) -> str:
+    # Prefer fully qualified name; API accepts both in many cases
+    if name.startswith("models/"):
+        return name
+    return f"models/{name}"
+
+# Sidebar model override
+st.sidebar.markdown("---")
+override = st.sidebar.selectbox("Model (optional)", options=KNOWN_MODEL_CANDIDATES, index=0)
+if override != "Auto (recommended)":
+    st.session_state["genai_working_model"] = _normalize_model_name(override)
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -168,8 +235,13 @@ st.plotly_chart(fig_forecast)
 
 # Function to generate insights using Google Gemini
 def generate_insights(company, forecast_data, historical_data):
-    # Create an instance of the Gemini model
-    model = genai.GenerativeModel('gemini-pro')
+    # Resolve a working model name
+    model_name = _pick_supported_model()
+    if not model_name:
+        st.error("No supported text generation model is available for this API key/region. Enable Gemini models in Google AI Studio and try again.")
+        return "AI model unavailable at the moment. Please try again later."
+
+    model = genai.GenerativeModel(model_name)
 
     # Create the prompt
     prompt = f"""
