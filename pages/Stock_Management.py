@@ -4,7 +4,7 @@ import plotly.graph_objs as go
 from prophet import Prophet
 from prophet.plot import plot_plotly
 import pandas as pd
-from langchain_google_genai import ChatGoogleGenerativeAI
+import google.generativeai as genai
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
@@ -15,6 +15,9 @@ google_api_key = st.secrets["google"]["api_key"]
 if not google_api_key:
     st.error("Google API key not found. Please check your Streamlit secrets configuration.")
     st.stop()
+
+# Configure the Gemini API
+genai.configure(api_key=google_api_key)
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -163,30 +166,30 @@ fig_forecast.update_layout(title=f"{company} Stock Price Forecast (Next {forecas
 # Display the forecast plot
 st.plotly_chart(fig_forecast)
 
-# Function to generate insights using Langchain and Gemini
+# Function to generate insights using Google Gemini
 def generate_insights(company, forecast_data, historical_data):
-    # Create an instance of the Gemini Pro model
-    llm = ChatGoogleGenerativeAI(api_key=google_api_key, model="gemini-1.5-flash", temperature=0.7)
+    # Create an instance of the Gemini model
+    model = genai.GenerativeModel('gemini-pro')
 
-    # Create a prompt template
-    template = """
+    # Create the prompt
+    prompt = f"""
     You are a financial analyst. Based on the following data for {company}, provide insights and analysis:
 
     Historical data summary:
-    Start date: {hist_start}
-    End date: {hist_end}
-    Starting price: {hist_start_price}
-    Ending price: {hist_end_price}
-    Highest price: {hist_max_price}
-    Lowest price: {hist_min_price}
+    Start date: {historical_data.index[0].date()}
+    End date: {historical_data.index[-1].date()}
+    Starting price: ${round(historical_data['Close'].iloc[0], 2)}
+    Ending price: ${round(historical_data['Close'].iloc[-1], 2)}
+    Highest price: ${round(historical_data['Close'].max(), 2)}
+    Lowest price: ${round(historical_data['Close'].min(), 2)}
 
     Forecast data summary:
-    Forecast start: {forecast_start}
-    Forecast end: {forecast_end}
-    Forecasted start price: {forecast_start_price}
-    Forecasted end price: {forecast_end_price}
-    Highest forecasted price: {forecast_max_price}
-    Lowest forecasted price: {forecast_min_price}
+    Forecast start: {forecast_data['ds'].iloc[-forecast_days].date()}
+    Forecast end: {forecast_data['ds'].iloc[-1].date()}
+    Forecasted start price: ${round(forecast_data['yhat'].iloc[-forecast_days], 2)}
+    Forecasted end price: ${round(forecast_data['yhat'].iloc[-1], 2)}
+    Highest forecasted price: ${round(forecast_data['yhat'].tail(forecast_days).max(), 2)}
+    Lowest forecasted price: ${round(forecast_data['yhat'].tail(forecast_days).min(), 2)}
 
     Please provide:
     1. A brief overview of the historical performance
@@ -198,34 +201,10 @@ def generate_insights(company, forecast_data, historical_data):
     Limit your response to about 150 words.
     """
 
-    # Create a prompt from the template
-    prompt = PromptTemplate(
-        input_variables=["company", "hist_start", "hist_end", "hist_start_price", "hist_end_price", "hist_max_price", "hist_min_price",
-                         "forecast_start", "forecast_end", "forecast_start_price", "forecast_end_price", "forecast_max_price", "forecast_min_price"],
-        template=template
-    )
-
-    # Create a chain
-    chain = LLMChain(llm=llm, prompt=prompt)
-
-    # Run the chain
-    insights = chain.run(
-        company=company,
-        hist_start=historical_data.index[0].date(),
-        hist_end=historical_data.index[-1].date(),
-        hist_start_price=round(historical_data['Close'].iloc[0], 2),
-        hist_end_price=round(historical_data['Close'].iloc[-1], 2),
-        hist_max_price=round(historical_data['Close'].max(), 2),
-        hist_min_price=round(historical_data['Close'].min(), 2),
-        forecast_start=forecast_data['ds'].iloc[-forecast_days].date(),
-        forecast_end=forecast_data['ds'].iloc[-1].date(),
-        forecast_start_price=round(forecast_data['yhat'].iloc[-forecast_days], 2),
-        forecast_end_price=round(forecast_data['yhat'].iloc[-1], 2),
-        forecast_max_price=round(forecast_data['yhat'].tail(forecast_days).max(), 2),
-        forecast_min_price=round(forecast_data['yhat'].tail(forecast_days).min(), 2)
-    )
-
-    return insights
+    # Generate content
+    response = model.generate_content(prompt)
+    
+    return response.text
 
 # Button to generate insights
 if st.button("Generate Insights"):
