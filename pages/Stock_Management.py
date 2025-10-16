@@ -35,7 +35,14 @@ def _pick_supported_model():
         return st.session_state["genai_working_model"]
 
     candidates = [
-        # Prefer fully-qualified names first
+        # Prefer newest Gemini 2.x models first (2025+)
+        "models/gemini-2.5-flash",
+        "models/gemini-2.5-pro",
+        "models/gemini-2.0-flash",
+        "models/gemini-2.5-flash-preview-05-20",
+        "models/gemini-2.5-pro-preview-06-05",
+        "models/gemini-2.0-flash-exp",
+        # Then 1.5 series
         "models/gemini-1.5-flash",
         "models/gemini-1.5-pro",
         "models/gemini-1.0-pro",
@@ -49,6 +56,9 @@ def _pick_supported_model():
         "models/gemini-1.5-flash-001",
         "models/gemini-1.5-pro-001",
         # Short names (some SDKs accept these)
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+        "gemini-2.0-flash",
         "gemini-1.5-flash",
         "gemini-1.5-pro",
         "gemini-1.0-pro",
@@ -105,6 +115,9 @@ def _pick_supported_model():
 # Allow user to override the model preference via UI
 KNOWN_MODEL_CANDIDATES = [
     "Auto (recommended)",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.5-pro",
+    "models/gemini-2.0-flash",
     "models/gemini-1.5-flash",
     "models/gemini-1.5-pro",
     "models/gemini-1.0-pro",
@@ -112,6 +125,9 @@ KNOWN_MODEL_CANDIDATES = [
     "models/gemini-1.5-pro-latest",
     "models/gemini-1.5-flash-8b",
     "models/gemini-1.5-pro-8b",
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-1.5-pro",
     "gemini-1.0-pro",
