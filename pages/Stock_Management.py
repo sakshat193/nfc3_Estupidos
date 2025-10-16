@@ -36,21 +36,42 @@ def _pick_supported_model():
         "models/gemini-1.5-flash",
         "models/gemini-1.5-pro",
         "models/gemini-1.0-pro",
+        # 1.5 latest aliases
+        "models/gemini-1.5-flash-latest",
+        "models/gemini-1.5-pro-latest",
+        # 1.5 8B variants where available
+        "models/gemini-1.5-flash-8b",
+        "models/gemini-1.5-pro-8b",
         # Short names (some SDKs accept these)
         "gemini-1.5-flash",
         "gemini-1.5-pro",
         "gemini-1.0-pro",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-pro-latest",
+        "gemini-1.5-flash-8b",
+        "gemini-1.5-pro-8b",
         # Fallback to PaLM2 if Gemini not available
         "models/text-bison-001",
         "text-bison-001",
     ]
 
+    model_ctor = getattr(genai, "GenerativeModel", None)
     for name in candidates:
         try:
-            model = genai.GenerativeModel(name)
             # Tiny probe to confirm availability without spending much
-            resp = model.generate_content("ok", request_options={"timeout": 8})
-            if getattr(resp, "text", None) is not None:
+            if model_ctor:
+                model = model_ctor(name)
+                resp = model.generate_content("ok", request_options={"timeout": 8})
+                ok_text = getattr(resp, "text", None)
+            else:
+                # Legacy fallback API
+                gen_text = getattr(genai, "generate_text", None)
+                if gen_text:
+                    resp = gen_text(model=name, prompt="ok")
+                    ok_text = getattr(resp, "result", None) or getattr(resp, "candidates", [None])[0]
+                else:
+                    ok_text = None
+            if ok_text is not None:
                 st.session_state["genai_working_model"] = name
                 return name
         except google_exceptions.NotFound:
@@ -67,9 +88,17 @@ KNOWN_MODEL_CANDIDATES = [
     "models/gemini-1.5-flash",
     "models/gemini-1.5-pro",
     "models/gemini-1.0-pro",
+    "models/gemini-1.5-flash-latest",
+    "models/gemini-1.5-pro-latest",
+    "models/gemini-1.5-flash-8b",
+    "models/gemini-1.5-pro-8b",
     "gemini-1.5-flash",
     "gemini-1.5-pro",
     "gemini-1.0-pro",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-pro-latest",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro-8b",
     "models/text-bison-001",
     "text-bison-001",
 ]
@@ -85,6 +114,10 @@ st.sidebar.markdown("---")
 override = st.sidebar.selectbox("Model (optional)", options=KNOWN_MODEL_CANDIDATES, index=0)
 if override != "Auto (recommended)":
     st.session_state["genai_working_model"] = _normalize_model_name(override)
+
+# Show which model is selected
+resolved = _pick_supported_model()
+st.sidebar.caption(f"Using model: {resolved or 'unresolved'}")
 
 # Set page title and icon
 st.set_page_config(page_title="Company Stock Data Viewer", page_icon=":moneybag:", layout="wide")
@@ -234,14 +267,35 @@ fig_forecast.update_layout(title=f"{company} Stock Price Forecast (Next {forecas
 st.plotly_chart(fig_forecast)
 
 # Function to generate insights using Google Gemini
+def _generate_with_model(model_name: str, prompt: str) -> str:
+    """Generate text using either new or legacy google-generativeai client APIs."""
+    model_ctor = getattr(genai, "GenerativeModel", None)
+    if model_ctor:
+        model = model_ctor(model_name)
+        response = model.generate_content(prompt)
+        return getattr(response, "text", "") or ""
+    # Legacy fallback
+    gen_text = getattr(genai, "generate_text", None)
+    if gen_text:
+        resp = gen_text(model=model_name, prompt=prompt)
+        # Try typical legacy response shapes
+        if hasattr(resp, "result") and resp.result:
+            return resp.result
+        if hasattr(resp, "candidates") and resp.candidates:
+            cand = resp.candidates[0]
+            # Some versions use dicts, others objects
+            if isinstance(cand, dict):
+                return cand.get("output", "")
+            return getattr(cand, "output", "")
+    raise RuntimeError("No compatible generation method available in google-generativeai client.")
+
+
 def generate_insights(company, forecast_data, historical_data):
     # Resolve a working model name
     model_name = _pick_supported_model()
     if not model_name:
         st.error("No supported text generation model is available for this API key/region. Enable Gemini models in Google AI Studio and try again.")
         return "AI model unavailable at the moment. Please try again later."
-
-    model = genai.GenerativeModel(model_name)
 
     # Create the prompt
     prompt = f"""
@@ -273,10 +327,27 @@ def generate_insights(company, forecast_data, historical_data):
     Limit your response to about 150 words.
     """
 
-    # Generate content
-    response = model.generate_content(prompt)
-    
-    return response.text
+    # Generate content with a couple of retries for transient errors
+    last_err = None
+    for _ in range(2):
+        try:
+            assert isinstance(model_name, str)
+            return _generate_with_model(model_name, prompt)
+        except google_exceptions.NotFound as e:
+            # Try to re-resolve model and retry once
+            st.session_state.pop("genai_working_model", None)
+            model_name = _pick_supported_model()
+            if model_name:
+                try:
+                    return _generate_with_model(model_name, prompt)
+                except Exception as inner_e:
+                    last_err = inner_e
+                    continue
+            last_err = e
+        except Exception as e:
+            last_err = e
+    st.warning(f"AI response failed: {last_err}")
+    return "AI model request failed. Please try again later."
 
 # Button to generate insights
 if st.button("Generate Insights"):
